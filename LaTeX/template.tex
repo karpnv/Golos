@@ -1,7 +1,7 @@
 \documentclass[a4paper]{article}
 
 \usepackage{INTERSPEECH2021}
-\usepackage[utf8]{inputenc}
+% \usepackage[utf8]{inputenc}
 \usepackage[T2A]{fontenc}
 \usepackage{caption}
 \usepackage{subcaption}
@@ -18,38 +18,38 @@
 % 
 \begin{abstract}
  
-This paper introduces Russian speech dataset called Golos, a large corpus suitable for speech research. The dataset mainly consists of audio recorded and manually annotated on the crowd-sourcing platform. Total duration of audio is about 1240 hours. We have made the corpus freely available for downloading, along with acoustic model with CTC loss prepared on this corpus. Additionally transfer learning was applied to improve performance of the acoustic model. In order to evaluate quality with beam-search algorithm we built 3-gram language model on the open Common Crawl dataset. Total word error rate (WER) metrics are about 3.5\% and 11.9\%.
-
+This paper introduces Russian speech dataset called Golos, a large corpus suitable for speech research. The dataset mainly consists of recorded audio files manually annotated on the crowd-sourcing platform. The total duration of the audio is about 1240 hours. We have made the corpus freely available for downloading, along with the acoustic model with CTC loss prepared on this corpus. Additionally, transfer learning was applied to improve performance of the acoustic model. In order to evaluate the quality of the dataset with the beam-search algorithm, we have built a 3-gram language model on the open Common Crawl dataset. The total word error rate (WER) metrics turned out to be about 3.5\% and 11.9\%.
 
 \end{abstract}
 \noindent\textbf{Index Terms}: speech recognition, open dataset, Russian language, speech corpus, acoustic model, language model
 
 \section{Introduction}
- We believe that open data is one of the key drivers of recent success in the field of artificial intelligence. In particular automatic speech recognition (ASR) algorithms became much better and more robust during recent years. New algorithms allows to create conversational systems with good user experience so that such technologies become more popular. It creates a basement for many new business ideas, disruptions of traditional strategies and benefits for innovators. 
+We believe that open data is one of the key drivers of the recent success in the field of artificial intelligence. In particular, automatic speech recognition (ASR) algorithms became much better in quality and more robust during the recent years. These new algorithms allow researchers to create conversational systems with good user experience; as a result, such technologies become more popular. That disrupts traditional business strategies and provides a basement for many new business ideas and benefits for innovators. 
   
- Despite the existence of outstanding initiatives such as MLS dataset \cite{pratap2020mls} there is a luck of manually annotated large scale speech corpora in Russian that is freely available and suitable for training and testing speech recognition systems.
+Despite the existence of outstanding initiatives such as MLS dataset \cite{pratap2020mls}, there is a lack of manually annotated large scale speech corpora in Russian that would be freely available and suitable for training and testing speech recognition systems.
  
- This article is dedicated to present our new open Russian speech dataset with manual annotation. It can be useful for many research projects which need labeled audio data such as \cite{savchenko2008analyse, gubochkin2013cl}. We provide an example on how to train acoustic model on this data using the open source NeMo toolkit \cite{kuchaiev2019nemo}. We also demonstrate improvement using pre-trained English acoustic models and quality benefits from language model. The highlights of this paper are the following:
+This article is dedicated to present our new open Russian speech dataset with manual annotation. It can be useful for many research projects such as \cite{savchenko2008analyse, gubochkin2013cl} which need labeled audio data. We provide an example on how to train an acoustic model on this data using the open source NeMo toolkit \cite{kuchaiev2019nemo}. We also demonstrate an improvement in performance using pre-trained English acoustic models and quality benefits from the language model. The highlights of this paper are the following:
 \begin{enumerate}
 \item Open audio corpus with 1240 hours of manually annotated speech in Russian.\footnote{https://github.com/sberdevices/golos}
-\item An example of acoustic model trained on our corpus.
-\item Transfer learning empirical results for Russian acoustic model using pre-trained English one.
-\item Evaluation of acoustic model on beam-search decoder with language model trained on the open dataset.
+\item An example of an acoustic model trained on our corpus.
+\item Transfer learning empirical results for the Russian acoustic model using the pre-trained English one.
+\item Evaluation of the acoustic model on beam-search decoder with the language model trained on the open dataset.
 \end{enumerate}
 
-Section 2 presents related works that inspired us to share our corpus. In Section 3 we describe the pipeline that we used to build the corpus. Section 4 describes the structure of the dataset. Section 5 presents acoustic model trained on this dataset and experimental results on transfer learning. Finally in Section 6 we provide acoustic model evaluation together with language model, which we also make available.
+
+In Section 2 related works are presented that inspired us to share our corpus. In Section 3 we describe the pipeline that we used to build the corpus. Section 4 describes the structure of the dataset. Section 5 presents the acoustic model trained on this dataset and experimental results of transfer learning. Finally, in Section 6 we provide the acoustic model evaluation together with the language model, which we also made available.
 
 \section{Related Work}
 
-There are few large scale data collections for speech recognition is available now. 
+There are few large scale data collections for speech recognition available now. 
 
 \subsection{Mono-lingual ASR datasets}
 
-Let us mention only several mono-lingual datasets which we think are most important in the field of Russian speech recognition.
+Let us mention only several mono-lingual datasets which we think are the most important in the field of Russian speech recognition.
 
-First one is LibriSpeech \cite{panayotov2015librispeech} which includes about 1000 hours of English audio-books. It is derived from the big LibriVox dataset,  distributed under an open license. Second one is an audio part of Wall Street Journal (WSJ) corpus \cite{paul1992design} which contains about 400 hrs. of speech data. These two datasets are usually used to evaluate state of the art (SoTA) speech recognition algorithms.
+First one is LibriSpeech \cite{panayotov2015librispeech} which includes about 1000 hours of English audio-books. It is derived from the big LibriVox dataset and distributed under an open license. Second one is an audio part of the Wall Street Journal (WSJ) corpus \cite{paul1992design} which contains about 400 hrs. of speech data. These two datasets are usually used to evaluate the state of the art (SoTA) speech recognition algorithms.
 
-Open-STT is the only Russian language large-scale dataset. It consists of more then 15000 hours \cite{veysov2020towardimagenetstt}. Unfortunately its annotation is not manually created. Transcriptions are derived by doing  alignment or ASR system. 
+Open-STT is the only Russian language large-scale dataset. It consists of more than 15 000 hours of audio \cite{veysov2020towardimagenetstt}. Unfortunately, its annotation is not manually created. Transcripts are derived by doing alignment or using the ASR system. 
 
 \begin{table}[th]
   \caption{Content of Open STT Russian corpus}
@@ -71,44 +71,46 @@ Open-STT is the only Russian language large-scale dataset. It consists of more t
 
 \subsection{Multi-lingual ASR datasets}
 
-We mainly focus on multi-lingual corpuses which include Russian data. VoxForge\footnote{http://www.voxforge.org} may be the oldest and still available open speech resource. It remains a low-scale dataset, which includes about 300 hours in total, and even less in Russian.
+We mainly focus on multi-lingual corpuses which include Russian data. VoxForge\footnote{http://www.voxforge.org} may be the oldest and still available open speech resource. It remains low-scale, and includes only about 300 hours in total, and even less in Russian.
 
-CommonVoice \cite{ardila2019common}, is a scalable solution, with more than 30 languages available including Russian, which keeps growing with 4500 (validated) hours currently available.
+CommonVoice \cite{ardila2019common}, is a scalable solution with more than 30 languages available, including Russian. It keeps growing, with 4500 (validated) hours currently available.
 
-LibriVox\footnote{https://librivox.org} includes nearly 80 506 hours in total but only 172 hours of Russian audiobooks read by volunteers from around the world.
+LibriVox\footnote{https://librivox.org} includes nearly 80 506 hours in total, but only 172 hours of Russian audiobooks read by volunteers from all around the world.
 
-The M-AILABS\footnote{https://www.caito.de/2019/01/the-m-ailabs-speech-dataset} speech dataset includes data based on LibriVox and Project Gutenberg\footnote{http://www.gutenberg.org}. The data consist of nearly thousand hours of audio in total and 47h hours of Russian speech.
+The M-AILABS\footnote{https://www.caito.de/2019/01/the-m-ailabs-speech-dataset} speech dataset includes the data based on LibriVox and Project Gutenberg\footnote{http://www.gutenberg.org}. The data consists of nearly a thousand hours of audio in total and 47 hours of Russian speech.
 
-MLS \cite{pratap2020mls} is a large-scale multilingual dataset for speech research like a LibriSpeech and M-AILABS derived from LibriVox dataset and consists of 8 languages, including about 44.5K hours of English and a total of about 6K hours for other languages. However, it doesn't contain any Russian language data.
+MLS \cite{pratap2020mls} is a large-scale multilingual dataset for speech research, which, like the LibriSpeech and M-AILABS, is derived from the LibriVox dataset, and consists of 8 languages, including about 44.5K hours of English and a total of about 6K hours of other languages. However, it doesn't contain any Russian language data.
 
 
 \section{Data Collection Pipeline}
 
-This section describes the main steps during data collection and preparation. The pipeline is developed to solve a cold start problem when we have a new device but there is no real user data yet. It includes four stages.
+This section describes the main steps during data collection and preparation. The pipeline is developed to solve the cold start problem when we have a new device but there is no real user data yet. It includes four steps.
 
 \subsection{Templates Creation}
 We create a list of domains which is suitable for our products: music, films, organizations, names, addresses, etc.
-For each domain we develop so-called templates - structures which let us create highly plausible text queries within certain domain. Basically, it describes the way in which different entities (such as command, movie title, actor name, and specific forms of these entities - including case and gender) might be arranged so that the resulting query might have been a result of some actual use-case. 
+For each domain we develop so-called templates - structures which let us create highly plausible text queries within a certain domain. Basically, they describe the way in which different entities (such as commands, movie titles, actor names and specific forms of these entities - including variations in case and gender) might be arranged so that the resulting query might have been a result of some actual use-case. 
+
 
 For example the template "command + film" can be instantiated as "Switch on Terminator 1"
 
 
 \subsection{Audio Generation}
-Using such templates we consistently generate tens and hundreds of thousands of text queries, which we then proceed to voiceover with real people's voices. We use two type of voice sources: a popular crowd-sourcing platform Yandex.Toloka\footnote{https://toloka.yandex.ru} and studio recordings through our smart screen called SberPortal.
+Using such templates we consistently generate tens and hundreds of thousands of text queries. We then proceed to voicing them with real people's voices. We use two types of voice sources: the popular crowd-sourcing platform Yandex.Toloka\footnote{https://toloka.yandex.ru} and studio recordings through our smart screen called SberPortal.
 
 \subsection{Crowd-sourced Validation}
-However, we cannot be certain that all the labellers have said exactly what was written in their assignment. We neither want to use such data in train, test or development sets, so we filter them out. We do so by presenting each pair of text and crowdsourced audio-file to 5 people on the very same labelling platform and ask them whether or not the audio matches the text in front of them. If 5 out of 5 people say that it does, then we consider text and audio to match each other. If less than 5 people say so - we don't use this pair at all.
+However, we cannot be certain that all the labellers have said exactly what was written in their assignment. We neither want to use such data in the train, test or development sets, so we filter them out. We do so by presenting each pair of text with the crowdsourced audio-file to 5 people on the very same labelling platform and ask them whether or not the audio matches the text in front of them. If 5 out of 5 people say that it does, then we consider the text and the audio to match each other. If less than 5 people say so - we don't use this pair.
 
 \subsection{Assisted Transcribation}
-As our acoustic model is only capable of predicting Cyrillic symbols and spaces, in order to train it we have to convert all the texts into those lacking any Latin symbols, diacritical symbols, numbers, special symbols and so on. In order to do so - we use Toloka again! Labellers are being presented with original text which might contain any symbols whatsoever, corresponding audio which was validated in the previous step and they are asked to transcribe the text with Cyrillic symbols and spaces only. 
+As our acoustic model is only capable of predicting Cyrillic symbols and spaces, in order to train it we have to convert all the texts into those without any Latin symbols, diacritical symbols, numbers, special symbols etc.. In order to do so - we use Yandex.Toloka again! Labellers are being presented with the original text which might contain any kind of symbols and the corresponding audio which was validated in the previous step. The labellers are asked to write down the text using only Cyrillic symbols and spaces. 
 
-For us it turned out to be vital to provide not only audios, but also hints in the form of original text as it might be extremely difficult to transcribe the audio of a Russian who is pronouncing "Annenmaykantereit Barfuß am Klavier"  without any assistance. For each pair of audio and text, we present it to 5 labellers. We take a look at the most common transcription in Cyrillic - and if there are at least two people who have written this exact transcription - we use it as the true label when training our acoustic model.
+It turned out to be vital for us to provide not only audios, but also hints in the form of original text, as it might be extremely difficult to transcribe the audio of a Russian who is pronouncing "Annenmaykantereit Barfuß am Klavier"  without any assistance. We presented each pair of audio and text to 5 labellers. We took a look at the most common transcription in Cyrillic - and if there were at least two people who have written the same transcription - we use it as a true label when training our acoustic model.
+
 
 \section{Dataset Overview}
 
-There are two types of audio sources in our corpus. First one is a crowd-sourcing platform Yandex.Toloka. We call it as a Crowd domain below. Second one is our target source - a smart screen SberPortal. The sales of SberPortal have not started by the development stage. So we have to generate audio through SberPortal in the studio by emulating real user environment. To do it we use 1 meter, 3 meters and 5 meters distances between speaker and device. We call it a Farfield domain below because the distance is usually quite far.
+There are two types of audio sources in our corpus. The first one is a crowd-sourcing platform called Yandex.Toloka. Further in text we call it “Crowd domain”. The second one is our main source of audio input - the smart screen “SberPortal”. The development stage of SberPortal has started before its sales commenced. So we had to generate audio through SberPortal in the studio by emulating the real user environment. To do so we used 1 meter, 3 meters and 5 meters distances between the speaker and the device. Further in text we call it a “Farfield domain” because of the distance which is usually quite large.
 
-Each of sources we split into training and testing subsets. The testing part of Crowd set consists of about 10K files, Farfield testing set is about 2K. The exact dataset separation is shown in Table~\ref{tab:dataset_separation}. 
+Each of the sources we split into train and test subsets. The testing part of Crowd set consists of about 10K files, Farfield test set is about 2K. The exact dataset separation is shown in the Table~\ref{tab:dataset_separation}. 
 
 \begin{table}[th]
   \caption{Golos Dataset Content Separation.}
@@ -125,8 +127,7 @@ Each of sources we split into training and testing subsets. The testing part of 
   \end{tabular}
 \end{table}
 
-We don't have information about speaker of recordings so the separation done without it. A voice of the same user could appear in training and testing subsets. 
-
+We don't have any information about the speakers in the recordings so the separation is done without it. The voice of the same user could appear both in the train and test subsets. 
 
 \begin{table}[t]
   \caption{Golos Training Set Description.}
@@ -148,7 +149,7 @@ We don't have information about speaker of recordings so the separation done wit
   \end{tabular}
 \end{table}
 
-Some statistical data like percentile, mean and standard deviation (STD) of the duration values of the training sets provided in the Table \ref{tab:dataset_description}. Figure \ref{fig:duration_distribution} shows a histogram of the duration distribution of utterances in the training set.
+Some statistical data like percentile, mean and standard deviation (STD) of the duration values of the training sets is provided in the Table \ref{tab:dataset_description}. On the figure \ref{fig:duration_distribution} a histogram is shown of the duration distribution of utterances in the training set.
 
 \begin{figure}[ht]
 \begin{subfigure}{.49\linewidth}
@@ -165,23 +166,23 @@ Some statistical data like percentile, mean and standard deviation (STD) of the 
   \caption{Farfield domain.}
   \label{fig:sub-second}
 \end{subfigure}
-\caption{Number of samples depends on sample duration (sec.) in Golos training set.}
+\caption{The number of samples depends on sample duration (sec.) in Golos training set.}
 \label{fig:duration_distribution}
 \end{figure}
 
-To perform any limited  or  no  supervision experiments with models we provide additional subsets of training set with duration 100 hours, 10 hours, 1 hour, 10 minutes as it was in the previous work \cite{kahn2020libri}.
+To perform any limited or no supervision experiments with models we provide additional subsets of the training set with durations 100 hours, 10 hours, 1 hour, 10 minutes, as it was in the previous work \cite{kahn2020libri}.
 
 \section{Acoustic Model}
 
-The best way to show the quality of data is to train some model on it and estimate quality metrics of the model. We estimate word error rate (WER) because it is a common performance metric of the speech recognition system. 
+The best way to show the quality of data is to train some model on it and to estimate the quality metrics of the model. We estimate the word error rate (WER) because it is a common performance metric of speech recognition systems.  
 
 \subsection{Experiment Setup}
 
-As an acoustic model we chose QuartzNet15x5 neural network \cite{kriman2020quartznet} which architecture is shown on the Table \ref{tabular:Quartznet}. The model starts with a convolutional layer $C_1$ followed by a sequence of 5 groups of blocks. Blocks in the group are identical, each block $B_k$ consists of R time-channel separable K-sized convolutional modules with C output channels. Each block is repeated S times. The model has 3 additional conv layers ($C_2, C_3, C_4$) at the end.
+For an acoustic model we chose QuartzNet15x5 neural network \cite{kriman2020quartznet}. Its architecture is shown on the Table \ref{tabular:Quartznet}. The model starts with a convolutional layer $C_1$ followed by a sequence of 5 groups of blocks. Blocks in the group are identical, each block $B_k$ consists of R time-channel separable K-sized convolutional modules with C output channels. Each block is repeated S times. The model has 3 additional convolutional layers ($C_2, C_3, C_4$) at the end.
 
-The training procedure is done by using the open source NeMo toolkit \cite{kuchaiev2019nemo}. We train our model on the Nvidia DGX-2 with 16 GPU cards Tesla v100 with a batch size of 88 per GPU and accumulate gradients every 10 batches, so our effective batch size is 16*88*10 = 14080. In order to decrease the memory and training time, we used mixed-precision training \cite{micikevicius2017mixed}.
+The training procedure is done by using the open source NeMo toolkit \cite{kuchaiev2019nemo}. We train our model on the Nvidia DGX-2 with 16 GPU cards Tesla v100 with a batch size of 88 per GPU, and accumulate gradients every 10 batches, so our effective batch size is 16*88*10 = 14080. In order to decrease the memory and training time, we used mixed-precision training \cite{micikevicius2017mixed}.
 
-We train an acoustic model on the whole randomly shuffled training part of dataset end evaluate it on two test sets separately (Crowd and Farfield domains). Data augmentation is carried out using SpecAugment \cite{park2019specaugment} without time warping deformation. We don't use dropouts during training. Training is conducted with the help of the NovoGrad \cite{ginsburg2019stochastic} optimizer ($\beta_1$ = 0.95, $\beta_2$ = 0.5) with a cosine annealing learning rate policy. About 5\% steps of learning rate warm-up helps stabilize early training with maximum learning rate of 0.01, and weight decay 0.001. Bigger learning rate leads to gradient overflow and infinite loss value in our experiments. 
+We trained an acoustic model on the whole randomly shuffled training part of the dataset and evaluated it on two test sets separately (Crowd and Farfield domains). Data augmentation is carried out using SpecAugment \cite{park2019specaugment} without time warping deformation. We don't use dropouts during training. Training is conducted with the help of the NovoGrad \cite{ginsburg2019stochastic} optimizer ($\beta_1$ = 0.95, $\beta_2$ = 0.5) with a cosine annealing learning rate policy. About 5\% steps of the learning rate warm-up helps to stabilize early training with maximum learning rate of 0.01, and weight decay 0.001. Bigger learning rates lead to gradient overflow and infinite loss value in our experiments. 
 
 \begin{table}[t]
   \caption{QuartzNet15x5 Architecture with outputs for Russian letters. }
@@ -210,17 +211,17 @@ We train an acoustic model on the whole randomly shuffled training part of datas
 
 \subsection{Transfer Learning}
 
-Transfer learning is a key element for the recent success of neural networks, so it is widely used in the industry. For example, ImageNet dataset is often utilized for creating pre-trained models in computer vision, and in the natural language processing fields pre-trained Bert models are usually used. 
+Transfer learning is the key element in the recent success of neural networks, so it is widely used in the industry. For example, ImageNet dataset is often utilized for creating pre-trained models in computer vision, and in the natural language processing field pre-trained BERT models are usually used. 
 
-QuartzNet15x5 acoustic model pre-trained on the 3300 hours of public data in English is publicly available. Russian version of this model is shown on the Table \ref{tabular:Quartznet}. The only difference from the English version is in the last layer as the target language has a different alphabet. For Cyrillic alphabet, there are 34 possible outputs - 32 letters (excluding letter ё), whitespace and blank symbols. When training the model using the Latin alphabet, there are 29 possible outputs - 26 letters, whitespace, blank and apostrophe symbols. Our transfer learning pipeline is as follows:
+The QuartzNet15x5 acoustic model pre-trained on 3300 hours of public data in English is publicly available. The Russian version of this model is shown on the Table \ref{tabular:Quartznet}. The only difference from the English version is in the last layer, as the target language has a different alphabet. For Cyrillic alphabet, there are 34 possible outputs - 32 letters (excluding letter ё), whitespace and blank symbols. When training the model using the Latin alphabet, there are 29 possible outputs - 26 letters, whitespace, blank and apostrophe symbols. Our transfer learning pipeline is as follows:
 \begin{itemize}
-    \item Take layers weights $C_1, B_1, B_2, B_3, B_4, B_5, C_2, C_3$ from pre-trained network as is and initialize new network with them.
-    \item Map similar character (for instance "k"  to "к" ) weights from old $C_4$ layer to the new one.
+    \item Take layers weights $C_1, B_1, B_2, B_3, B_4, B_5, C_2, C_3$ from pre-trained network as is and initialize a new network with them.
+    \item Map similar character (for instance "k"  to "к" ) weights from the old $C_4$ layer to the new one.
     \item Randomly initialize weights for new characters in the layer $C_4$
-    \item Train the resulting network on a target dataset starting with the same learning rate that was used to pre-train the model from scratch.
+    \item Train the resulting network on the target dataset starting with the same learning rate that was used to pre-train the model from scratch.
 \end{itemize}
 
-Figures \ref{fig:crowd_domain} and \ref{fig:portal_domain} demonstrate how our transfer learning procedure affects greedy WER along a training process. There are four training setups: 10 000 steps with random initialization (Green - 10K from scratch), 10 000 steps with English initialization (Red - 10K from En), 20 000 steps with random initialization (Blue - 20K from scratch), 20 000 steps with English initialization (Violet - 20K from En). Each of the training setups has two evaluation sets - Crowd and Farfield - so we have eight curves. We can see that random initialization curves are positioned much higher than initialisation by English model. It means that transfer learning always boosts our performance.
+Figures \ref{fig:crowd_domain} and \ref{fig:portal_domain} demonstrate how our transfer learning procedure affects greedy WER along the training process. There are four training setups: 10 000 steps with random initialization (Green - 10K from scratch), 10 000 steps with English initialization (Red - 10K from En.), 20 000 steps with random initialization (Blue - 20K from scratch), 20 000 steps with English initialization (Violet - 20K from En.). Each of the training setups has two evaluation sets - Crowd and Farfield - so we have eight curves. We can see that random initialization curves are positioned much higher than the initialisation by the English model. It means that transfer learning always boosts our performance.
 
 \begin{figure}[ht]
 \begin{subfigure}{.99\linewidth}
@@ -241,10 +242,10 @@ Figures \ref{fig:crowd_domain} and \ref{fig:portal_domain} demonstrate how our t
 \label{fig:portal_crowd_domain}
 \end{figure}
 
-Table \ref{tab:wer_50k} shows a final values of greedy WER for our domains. There are three experiments with different training durations. 50 000 steps took about 8 days long, 20 000 steps took 2 days 21 hours, 10 000 steps took 1 day 19 hours. These WER scores have been calculated using the greedy decoder. The best values are 4.327\% and 15.28\% on the Crowd and Farfield domain respectively and were shown by the model which was trained for 50K steps. 
+Table \ref{tab:wer_50k} shows the final values of the greedy WER for our domains. There are three experiments with different training durations. 50 000 steps took about 8 days long, 20 000 steps took 2 days 21 hours, 10 000 steps took 1 day 19 hours. These WER scores were calculated using the greedy decoder. The best values are 4.327\% and 15.28\% on the Crowd and Farfield domain respectively. They were shown by the model which was trained for 50K steps.  
 
 \begin{table}[t]
-  \caption{Transfer Learning Influence.}
+  \caption{Transfer Learning Influence on greedy WER \%).}
   \label{tab:wer_50k}
   \centering
   \begin{tabular}{lrr}
@@ -263,19 +264,17 @@ Table \ref{tab:wer_50k} shows a final values of greedy WER for our domains. Ther
 \end{table}
 
 
-Figure \ref{fig:wer_steps} demonstrates how greedy WER is changing along the whole training process for three training setups initialized by the pre-trained English model. 
+Figure \ref{fig:wer_steps} demonstrates how greedy WER is changing along the whole training process for three training setups initialized by the pre-trained English model.  
 
 \begin{figure}[ht]
 \begin{subfigure}{.49\linewidth}
   \centering
-  % include first image
   \includegraphics[width=1.\linewidth]{LaTeX/img/crowd_5.095_4.629_4.327_en.png}  
   \caption{Crowd domain.}
   \label{fig:wer_steps1}
 \end{subfigure}
 \begin{subfigure}{.49\linewidth}
   \centering
-  % include second image
   \includegraphics[width=1.\linewidth]{LaTeX/img/portal_17.13_15.95_15.28_en.png}  
   \caption{Farfield domain.}
   \label{fig:wer_steps2}
@@ -288,20 +287,20 @@ Figure \ref{fig:wer_steps} demonstrates how greedy WER is changing along the who
 
 We create a language model using the Russian part of the Common Crawl dataset\footnote{https://commoncrawl.org} and KenLM Language Model Toolkit \cite{heafield-2011-kenlm}. The Common Crawl is a repository of web crawl data that can be accessed and analyzed by anyone. KenLM toolkit allows us to create a very fast n-gram language model.
 
-We have created three external 3-gram language models. First one isn using cleaned texts from Common Crawl dataset (CC LM). Second one was built with the help of transcription of training set audios (train LM). Third model is a merge of these two 3-gram models with 50/50 percent weights (CC + train LM).
+We have created three external 3-gram language models. The first one is using clean preprocessed texts from the Common Crawl dataset (CC LM). During preprocessing we had removed punctuation, space tokens and other extra symbols. The second one was built with the help of transcription of training set audios (train LM). The third model is a merge of these two 3-gram models with 50/50 percent weights (CC + train LM).
 
 \begin{table}[t]
-  \caption{Common Crawl (CC) Language Model Influence}
+  \caption{Common Crawl (CC) Language Model Influence on greedy WER \%.}
   \label{tab:language_model}
   \centering
   \begin{tabular}{lrr}
     \toprule
     \textbf{Model}      & \textbf{Crowd}     & \textbf{Farfield} \\
     \midrule
-    20K greedy & 4.629\% & 15.95\%    \\
+    20K greedy & 4.629\%  & 15.95\%    \\
     20K with CC LM & 4.856\% & 12.57\%   \\
-    20K with train LM & 3.661\% & 12.83\%   \\
-    20K with CC + train LM & 3.455\% & 11.86\%   \\
+    20K with train LM & 3.661\% & 12.83\% \\
+    20K with CC + train LM & 3.455\% & 11.86\% \\
     
     \midrule
     50K greedy & 4.327\% & 15.28\%   \\
@@ -312,23 +311,23 @@ We have created three external 3-gram language models. First one isn using clean
   \end{tabular}
 \end{table}
 
-We use these created language models for inference with beam-search decoder (beam size=16, alpha=2, beta=1.5). Table \ref{tab:language_model} shows how beam-search decoder with our three language models influences the resulting WER. The best WER values with the language model are 3.455\% and 11.86\%. 
+We use these created language models for an inference with beam-search decoder (beam size=16, alpha=2, beta=1.5). Table \ref{tab:language_model} shows how the beam-search decoder with our three language models influences the resulting WER. The best WER values with the language model are 3.455\% and 11.86\%. 
 
 
 \section{Conclusions}
 
-In this paper we reveal an open Russian language dataset. It is a large corpus suitable for speech research. It consists of audios obtained both from the crowd-sourcing platform and from the studio with far field settings. All 1240 hours of audios are manually annotated.
+In this paper we reveal an open Russian language dataset. It is a large corpus suitable for speech research. It consists of audios obtained both from the crowd-sourcing platform and from the studio with far field settings. All 1240 hours of the audio are manually annotated.
 
-Using our new corpus we have trained a QuartzNet acoustic model with CTC loss. The best performance of the acoustic-model was achieved with the help of transfer learning from pre-trained model on English language. 
+Using our new corpus we have trained a QuartzNet acoustic model with CTC loss. The best performance of the acoustic-model was achieved with the help of transfer learning from a pre-trained model on English language. 
 
-Additionally, we built 3-gram language model on the open Common Crawl dataset and merged it with train set transcriptions. Using a beam-search algorithm, our resulting model achieves 3.5\% and 11.9\% WER values on Crowd and Farfield datasets respectively.
+Additionally, we built a 3-gram language model on the open Common Crawl dataset and merged it with the train set transcriptions. Using a beam-search algorithm, our resulting model achieves 3.5\% and 11.9\% WER values on Crowd and Farfield datasets respectively.
 
 All the data and models are freely available for downloading at the Github repository\footnote{https://github.com/sberdevices/golos}.
 
 
 \section{Acknowledgements}
 
-The authors would like to thank Sber corporation for the funding of this work.
+The authors would like to thank Sber corporation for funding this work.
 
 \bibliographystyle{IEEEtran}
 
