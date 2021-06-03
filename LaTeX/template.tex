@@ -47,7 +47,7 @@ There are few large scale data collections for speech recognition available now.
 
 Let us mention only several mono-lingual datasets which we think are the most important in the field of Russian speech recognition.
 
-First one is LibriSpeech \cite{panayotov2015librispeech} which includes about 1000 hours of English audio-books. It is derived from the big LibriVox dataset and distributed under an open license. Second one is an audio part of the Wall Street Journal (WSJ) corpus \cite{paul1992design} which contains about 400 hrs. of speech data. These two datasets are usually used to evaluate the state of the art (SoTA) speech recognition algorithms.
+First one is LibriSpeech \cite{panayotov2015librispeech} which includes about 1000 hours of English audio-books. It is derived from the big LibriVox dataset and distributed under an open license. Second one is an audio part of the Wall Street Journal (WSJ) corpus \cite{paul1992design} which contains about 400 hrs. of speech data. These two datasets are usually used as a public benchmarks to compare new algorithms. It helps to push forward the state of the art (SoTA) quality level of speech recognition.
 
 Open-STT is the only Russian language large-scale dataset. It consists of more than 15 000 hours of audio \cite{veysov2020towardimagenetstt}. Unfortunately, its annotation is not manually created. Transcripts are derived by doing alignment or using the ASR system. 
 
@@ -101,7 +101,7 @@ Using such templates we consistently generate tens and hundreds of thousands of 
 However, we cannot be certain that all the labellers have said exactly what was written in their assignment. We neither want to train on such data, nor test or validate on it, so we filter them out. We do so by presenting each pair of text with the crowdsourced audio-file to 5 people on the very same labelling platform and ask them whether or not the audio matches the text in front of them. If 5 out of 5 people say that it does, then we consider the text and the audio to match each other. If less than 5 people say so - we don't use this pair.
 
 \subsection{Assisted Transcribation}
-As our acoustic model is only capable of predicting Cyrillic symbols and spaces, in order to train it we have to convert all the texts into those without any Latin symbols, diacritical symbols, numbers, special symbols etc.. In order to do so - we use Yandex.Toloka again. Labellers are being presented with the original text which might contain any kind of symbols and the corresponding audio which was validated in the previous step. The labellers are asked to write down the text using only Cyrillic symbols and spaces. 
+We want our corpus to be monolingual and only consist of Cyrillic letters and spaces. However, there are many sentences containing Latin and diacritic letters, numbers, special symbols, etc. In order to get rid of such symbols but preserve the data - we use Yandex.Toloka again. Labellers are being presented with the original text which might contain any kind of symbols and the corresponding audio which was validated in the previous step. The labellers are asked to write down the text using only Cyrillic symbols and spaces. 
 
 It turned out to be vital for us to provide not only audios, but also hints in the form of original text, as it might be extremely difficult to transcribe the audio of a Russian who is pronouncing "Annenmaykantereit Barfuß am Klavier"  without any assistance. We presented each pair of audio and text to 5 labellers. We took a look at the most common transcription in Cyrillic - and if there were at least two people who have written the same transcription - we use it as a true label when training our acoustic model.
 
@@ -110,7 +110,7 @@ It turned out to be vital for us to provide not only audios, but also hints in t
 
 There are two types of audio sources in our corpus. The first one is a crowd-sourcing platform called Yandex.Toloka. Further in text we call it “Crowd domain”. The second one is our main source of audio input - the smart screen “SberPortal”. The development stage of SberPortal has started before its sales commenced. So we had to generate audio through SberPortal in the studio by emulating the real user environment. To do so we used 1 meter, 3 meters and 5 meters distances between the speaker and the device. Further in text we call it a “Farfield domain” because of the distance which is usually quite large.
 
-Each of the sources we split into train and test subsets. The testing part of Crowd set consists of about 10K files, Farfield test set is about 2K. The exact dataset separation is shown in the Table~\ref{tab:dataset_separation}. 
+Each of the sources we split into train and test subsets. The testing part of Crowd set consists of about 10 000 files, Farfield test set is about 2 000. The exact dataset separation is shown in the Table~\ref{tab:dataset_separation}. 
 
 \begin{table}[th]
   \caption{Golos Dataset Content Separation.}
@@ -127,7 +127,7 @@ Each of the sources we split into train and test subsets. The testing part of Cr
   \end{tabular}
 \end{table}
 
-We don't have any information about the speakers in the recordings so the separation is done without it. The voice of the same user could appear both in the train and test subsets. 
+We don't use any personal information about the speakers such as age, gender, user id. The recordings are anonymized and the separation is done without it. The voice of the same user could appear both in the train and test subsets. 
 
 \begin{table}[t]
   \caption{Golos Training Set Description.}
@@ -185,7 +185,7 @@ The training procedure is done by using the open source NeMo toolkit \cite{kucha
 We trained an acoustic model on the whole randomly shuffled training part of the dataset and evaluated it on two test sets separately (Crowd and Farfield domains). Data augmentation is carried out using SpecAugment \cite{park2019specaugment} without time warping deformation. We don't use dropouts during training. Training is conducted with the help of the NovoGrad \cite{ginsburg2019stochastic} optimizer ($\beta_1$ = 0.95, $\beta_2$ = 0.5) with a cosine annealing learning rate policy. About 5\% steps of the learning rate warm-up helps to stabilize early training with maximum learning rate of 0.01, and weight decay 0.001. Bigger learning rates lead to gradient overflow and infinite loss value in our experiments. 
 
 \begin{table}[t]
-  \caption{QuartzNet15x5 Architecture with outputs for Russian letters. }
+  \caption{QuartzNet15x5 Architecture with Outputs for Russian Letters. }
   \label{tabular:Quartznet}
   \centering
   \begin{tabular}{ccccc}
@@ -208,12 +208,35 @@ We trained an acoustic model on the whole randomly shuffled training part of the
   \end{tabular}
 \end{table}
 
+% \begin{table}[t]
+%   \caption{QuartzNet15x5 Architecture with Outputs for Russian Letters. }
+%   \label{tabular:Quartznet1111}
+%   \centering
+%   \begin{tabular}{ccccccc}
+%     \toprule
+%     \textbf{Block}  & \textbf{R} & \textbf{K} & \textbf{C} & 15x5 & Mapping & 5x5 \\
+%     \midrule
+%     $C_1$  & 1 & 33 & 256 &  1 & 1 $\rightarrow$ 1 & 1  \\
+%     \midrule
+%     $B_1$  & 5 & 33 & 256 &  2 3 4  & 2 $\rightarrow$ 2 & 2 \\
+%     $B_2$  & 5 & 39 & 256 &  5 6 7  & 5 $\rightarrow$ 3 & 3 \\
+%     $B_3$  & 5 & 51 & 512 &  8 9 10 & 8 $\rightarrow$ 4 & 4 \\
+%     $B_4$  & 5 & 63 & 512 &  11 12 13 & 11 $\rightarrow$ 5 & 5 \\
+%     $B_5$  & 5 & 75 & 512 &  14 15 16 & 14 $\rightarrow$ 6 & 6 \\
+%     \midrule
+%     $C_2$  & 1 & 87 & 512 &  17 & 17 $\rightarrow$ 7 & 7 \\
+%     $C_3$  & 1 & 1 & 1024 &  18 & 18 $\rightarrow$ 8 & 8 \\
+%     $C_4$  & 1 & 1 & $\|$labels$\|$ &  19 & 19 $\rightarrow$ 9 & 9 \\
+%     \bottomrule
+%     \textbf{Params,M}  &  &  & &  18.9 &  & 6.7    \\
+%   \end{tabular}
+% \end{table}
 
 \subsection{Transfer Learning}
 
 Transfer learning is the key element in the recent success of neural networks, so it is widely used in the industry. For example, ImageNet dataset is often utilized for creating pre-trained models in computer vision, and in the natural language processing field pre-trained BERT models are usually used. 
 
-The QuartzNet15x5 acoustic model pre-trained on 3300 hours of public data in English is publicly available. The Russian version of this model is shown on the Table \ref{tabular:Quartznet}. The only difference from the English version is in the last layer, as the target language has a different alphabet. For Cyrillic alphabet, there are 34 possible outputs - 32 letters (excluding letter ё), whitespace and blank symbols. When training the model using the Latin alphabet, there are 29 possible outputs - 26 letters, whitespace, blank and apostrophe symbols. Our transfer learning pipeline is as follows:
+The QuartzNet15x5 acoustic model pre-trained on 3300 hours of public data in English is publicly available. The Russian version of this model is shown on the Table \ref{tabular:Quartznet}. The only difference from the English version is in the last layer $C_4$, because the target language has a different alphabet. For Cyrillic alphabet, there are 34 possible outputs - 32 letters (excluding letter ё), whitespace and blank symbols. When training the model using the Latin alphabet, there are 29 possible outputs - 26 letters, whitespace, blank and apostrophe symbols. Our transfer learning pipeline is as follows:
 \begin{itemize}
     \item Take layers weights $C_1, B_1, B_2, B_3, B_4, B_5, C_2, C_3$ from pre-trained network as is and initialize a new network with them.
     \item Map similar character (for instance "k"  to "к" ) weights from the old $C_4$ layer to the new one.
@@ -242,7 +265,7 @@ Figures \ref{fig:crowd_domain} and \ref{fig:portal_domain} demonstrate how our t
 \label{fig:portal_crowd_domain}
 \end{figure}
 
-Table \ref{tab:wer_50k} shows the final values of the greedy WER for our domains. There are three experiments with different training durations. 50 000 steps took about 8 days long, 20 000 steps took 2 days 21 hours, 10 000 steps took 1 day 19 hours. These WER scores were calculated using the greedy decoder. The best values are 4.327\% and 15.28\% on the Crowd and Farfield domain respectively. They were shown by the model which was trained for 50K steps.  
+Table \ref{tab:wer_50k} shows the final values of the greedy WER for our domains. There are three experiments with different training durations. 50 000 steps took about 8 days long, 20 000 steps took 2 days 21 hours, 10 000 steps took 1 day 19 hours. These WER scores were calculated using the greedy decoder. The best values are 4.327\% and 15.28\% on the Crowd and Farfield domain respectively. They were shown by the model which was trained for 50 000 steps.  
 
 \begin{table}[t]
   \caption{Transfer Learning Influence on greedy WER \%.}
@@ -325,9 +348,9 @@ Additionally, we built a 3-gram language model on the open Common Crawl dataset 
 All the data and models are freely available for downloading at the Github repository\footnote{https://github.com/sberdevices/golos}.
 
 
-\section{Acknowledgements}
+% \section{Acknowledgements}
 
-The authors would like to thank Sber corporation for funding this work.
+% The authors would like to thank Sber corporation for funding this work.
 
 \bibliographystyle{IEEEtran}
 
@@ -351,5 +374,32 @@ The authors would like to thank Sber corporation for funding this work.
 %   ``Title of your INTERSPEECH 2021 publication,''
 %   in \textit{Interspeech 2021 -- 20\textsuperscript{th} Annual Conference of the International Speech Communication Association, September 15-19, Graz, Austria, Proceedings, Proceedings}, 2020, pp.~100--104.
 % \end{thebibliography}
-
+% # cv50K/QuartzNet15x5_ru.nemo
+% # dev
+% # greedy 0.09314243878630114
+% # СС     0.06341007077198406
+% # golos  0.2335746630873939
+% # 50x50  0.06400661623145963
+% # test
+% # greedy 0.11277843847294787
+% # СС     0.07976001175888932
+% # 50x50  0.08060184133516843
+% # buriy_audiobooks
+% # greedy 0.37859344212600415
+% # CC     0.29636740261708683
+% # 50x50  0.29980296064265144
+% # public_youtube700
+% # greedy 0.520689068688194
+% # CC     0.47994265859999513
+% # 50x50  0.48227519012561654
+% # crowd
+% # greedy 0.04389411437869588
+% # golos  0.035480414335039887
+% # CC     0.04708893915942374
+% # 50x50  0.03317855300234155
+% # portal
+% # greedy 0.14948699594368886
+% # golos  0.12383679312813171
+% # CC     0.12502982581722738
+% # 50x50  0.1148890479599141
 \end{document}
