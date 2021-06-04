@@ -10,7 +10,7 @@
 \name{Nikolay Karpov, Alexander Denisenko, Fedor Minkin}
 
 \address{Sber, Russia}
-\email{karpnv@gmail.com, alexander.denisenko@phystech.edu, minkin.f.a@sberbank.ru}
+\email{nkarpov@sberbank.ru, alexander.denisenko@phystech.edu, minkin.f.a@sberbank.ru}
 
 \begin{document}
 
@@ -18,7 +18,7 @@
 % 
 \begin{abstract}
  
-This paper introduces a novel Russian speech dataset called Golos, a large corpus suitable for speech research. The dataset mainly consists of recorded audio files manually annotated on the crowd-sourcing platform. The total duration of the audio is about 1240 hours. We have made the corpus freely available for downloading, along with the acoustic model with CTC loss prepared on this corpus. Additionally, transfer learning was applied to improve the performance of the acoustic model. In order to evaluate the quality of the dataset with the beam-search algorithm, we have built a 3-gram language model on the open Common Crawl dataset. The total word error rate (WER) metrics turned out to be about 3.5\% and 11.9\%.
+This paper introduces a novel Russian speech dataset called Golos, a large corpus suitable for speech research. The dataset mainly consists of recorded audio files manually annotated on the crowd-sourcing platform. The total duration of the audio is about 1240 hours. We have made the corpus freely available for downloading, along with the acoustic model with CTC loss prepared on this corpus. Additionally, transfer learning was applied to improve the performance of the acoustic model. In order to evaluate the quality of the dataset with the beam-search algorithm, we have built a 3-gram language model on the open Common Crawl dataset. The total word error rate (WER) metrics turned out to be about 3.3\% and 11.5\%.
 
 \end{abstract}
 \noindent\textbf{Index Terms}: speech recognition, open dataset, Russian language, speech corpus, acoustic model, language model
@@ -73,7 +73,7 @@ Open-STT is the only Russian language large-scale dataset. It consists of more t
 
 We mainly focus on multi-lingual corpuses which include Russian data. VoxForge\footnote{http://www.voxforge.org} may be the oldest and still available open speech resource. It remains low-scale, and includes only about 300 hours in total, and even less in Russian.
 
-CommonVoice \cite{ardila2019common}, is a scalable solution with more than 30 languages available, including Russian. It keeps growing, with 4500 (validated) hours currently available. There are only 111 hours of Russian labeled data.
+Common Voice \cite{ardila2019common}, is a scalable solution with more than 30 languages available, including Russian. It keeps growing, with 4500 (validated) hours currently available. There are only 111 hours of Russian labeled data.
 
 LibriVox\footnote{https://librivox.org} includes nearly 80 506 hours in total, but only 172 hours of Russian audiobooks read by volunteers from all around the world.
 
@@ -182,7 +182,7 @@ For an acoustic model we chose QuartzNet15x5 neural network \cite{kriman2020quar
 
 The training procedure is done by using the open source NeMo toolkit \cite{kuchaiev2019nemo}. We train our model on the Nvidia DGX-2 with 16 GPU cards Tesla v100 with a batch size of 88 per GPU, and accumulate gradients every 10 batches, so our effective batch size is $16 \cdot 88 \cdot 10 = 14080$. In order to decrease the memory footprint and training time, we used mixed-precision training \cite{micikevicius2017mixed}.
 
-We trained an acoustic model on the whole randomly shuffled training part of the dataset and evaluated it on two test sets separately (Crowd and Farfield domains). Data augmentation is carried out using SpecAugment \cite{park2019specaugment} without time warping deformation. We don't use dropouts during training. Training is conducted with the help of the NovoGrad \cite{ginsburg2019stochastic} optimizer ($\beta_1$ = 0.95, $\beta_2$ = 0.5) with a cosine annealing learning rate policy. About 5\% steps of the learning rate warm-up helps to stabilize early training with maximum learning rate of 0.01, and weight decay 0.001. Bigger learning rates lead to gradient overflow and infinite loss value in our experiments. 
+We trained an acoustic model on the randomly shuffled training part of the Golos dataset and evaluated it on two test sets separately (Crowd and Farfield domains). Data augmentation is carried out using SpecAugment \cite{park2019specaugment} without time warping deformation. We don't use dropouts during training. Training is conducted with the help of the NovoGrad \cite{ginsburg2019stochastic} optimizer ($\beta_1$ = 0.95, $\beta_2$ = 0.5) with a cosine annealing learning rate policy. About 5\% steps of the learning rate warm-up helps to stabilize early training with maximum learning rate of 0.01, and weight decay 0.001. Bigger learning rates lead to gradient overflow and infinite loss value in our experiments. 
 
 \begin{table}[t]
   \caption{QuartzNet15x5 Architecture with Outputs for Russian Letters. }
@@ -244,7 +244,7 @@ The QuartzNet15x5 acoustic model pre-trained on 3300 hours of public data in Eng
     \item Train the resulting network on the target dataset starting with the same learning rate that was used to pre-train the model from scratch.
 \end{itemize}
 
-Figures \ref{fig:crowd_domain} and \ref{fig:portal_domain} demonstrate how our transfer learning procedure affects greedy WER along the training process. There are four training setups: 10 000 steps with random initialization (Green - 10K from scratch), 10 000 steps with English initialization (Red - 10K from En.), 20 000 steps with random initialization (Blue - 20K from scratch), 20 000 steps with English initialization (Violet - 20K from En.). Each of the training setups has two evaluation sets - Crowd and Farfield - so we have eight curves. We can see that random initialization curves are positioned much higher than the initialisation by the English model. It means that transfer learning always boosts our performance.
+Figures \ref{fig:crowd_domain} and \ref{fig:portal_domain} demonstrate how our transfer learning procedure affects greedy WER along the training process. There are four training setups: 10 000 steps with random initialization (Green - 10K from scratch), 10 000 steps with English initialization (Red - 10K from En.), 20 000 steps with random initialization (Blue - 20K from scratch), 20 000 steps with English initialization (Violet - 20K from En.). Each of the training setups has two evaluation sets - Crowd and Farfield - so we have eight curves. We can see that curves with random initialization are positioned much higher than initialised by the English model. It means that transfer learning always boosts our performance. WER of the models trained from scratch is big (more then 20\%) because number of training steps is quite small. If we train longer then the gap to the English initialisation becomes smaller but still remains.
 
 \begin{figure}[ht]
 \begin{subfigure}{.49\linewidth}
@@ -287,54 +287,68 @@ Table \ref{tab:wer_50k} shows the final values of the greedy WER for our domains
 \end{table}
 
 
-Figure \ref{fig:wer_steps} demonstrates how greedy WER is changing along the whole training process for three training setups initialized by the pre-trained English model.  
 
 \begin{figure}[ht]
 \begin{subfigure}{.49\linewidth}
   \centering
-  \includegraphics[width=1.\linewidth]{LaTeX/img/crowd_5.095_4.629_4.327_en.png}  
+  \includegraphics[width=1.\linewidth]{LaTeX/img/crowd.png}  
   \caption{Crowd domain.}
   \label{fig:wer_steps1}
 \end{subfigure}
 \begin{subfigure}{.49\linewidth}
   \centering
-  \includegraphics[width=1.\linewidth]{LaTeX/img/portal_17.13_15.95_15.28_en.png}  
+  \includegraphics[width=1.\linewidth]{LaTeX/img/farfield.png}  
   \caption{Farfield domain.}
   \label{fig:wer_steps2}
 \end{subfigure}
-\caption{Greedy WER depends on the training duration with English initialisation. Red - 10K, Violet - 20K, Blue - 50K. }
+% \begin{subfigure}{.49\linewidth}
+%   \centering
+%   \includegraphics[width=1.\linewidth]{LaTeX/img/MCVdev.png}  
+%   \caption{CV dev set.}
+%   \label{fig:wer_steps3}
+% \end{subfigure}
+% \begin{subfigure}{.49\linewidth}
+%   \centering
+%   \includegraphics[width=1.\linewidth]{LaTeX/img/MCVtest.png}  
+%   \caption{CV test set.}
+%   \label{fig:wer_steps4}
+% \end{subfigure}
+\caption{Greedy WER depends on the training duration with English initialisation. Orange - 10K, Red - 20K, Blue and Pink - 50K. }
 \label{fig:wer_steps}
 \end{figure}
 
 \section{Language Model}
 
+The last experiment was to train an acoustic model using Golos and Common Voice \cite{ardila2019common} datasets together and evaluate it with beam-search decoder and language model. Common Voice contains dev, test and train sets which duration is about 100 hours. Figure \ref{fig:wer_steps} demonstrates how greedy WER is changing along the whole training process for three training setups (10000, 20000, 50000 steps) initialized by the pre-trained English model.
+
 We create a language model using the Russian part of the Common Crawl dataset\footnote{https://commoncrawl.org} and KenLM Language Model Toolkit \cite{heafield-2011-kenlm}. The Common Crawl is a repository of web crawl data that can be accessed and analyzed by anyone. KenLM toolkit allows us to create a very fast n-gram language model.
 
-We have created three external 3-gram language models. The first one is using clean preprocessed texts from the Common Crawl dataset (CC LM). During preprocessing we had removed punctuation, space tokens and other extra symbols. The second one was built with the help of transcription of training set audios (train LM). The third model is a merge of these two 3-gram models with 50/50 percent weights (CC + train LM).
+We have created three external 3-gram language models. The first one is using clean preprocessed texts from the Common Crawl dataset (CC LM). During preprocessing we had removed punctuation, space tokens and other extra symbols. The second one was built with the help of transcription of training set audios (train LM). The third model is a merge of these two 3-gram models with 50/50 percent weights (CC+train LM).
+
 
 \begin{table}[t]
-  \caption{Common Crawl (CC) Language Model Influence on greedy WER \%.}
+  \caption{Influence of Common Crawl (CC) Language Model on WER \% for Golos and Common Voice (CV) validation sets.}
   \label{tab:language_model}
   \centering
-  \begin{tabular}{lrr}
+  \begin{tabular}{lrrrr}
     \toprule
-    \textbf{Model}      & \textbf{Crowd}     & \textbf{Farfield} \\
-    \midrule
-    20K greedy & 4.629\%  & 15.95\%    \\
-    20K with CC LM & 4.856\% & 12.57\%   \\
-    20K with train LM & 3.661\% & 12.83\% \\
-    20K with CC + train LM & 3.455\% & 11.86\% \\
+    \textbf{Decoder} & \textbf{Crowd} & \textbf{Farfield} & CVdev & CVtest \\
+    % \midrule
+    % 20K greedy & 4.629\%  & 15.95\%    \\
+    % 20K with CC LM & 4.856\% & 12.57\%   \\
+    % 20K with train LM & 3.661\% & 12.83\% \\
+    % 20K with CC + train LM & 3.455\% & 11.86\% \\
     
     \midrule
-    50K greedy & 4.327\% & 15.28\%   \\
-    50K with CC LM & 4.869\% & 12.59\%   \\
-    50K with train LM & 3.784\% & 12.70\%   \\
-    50K with CC + train LM & 3.592\% & 11.93\%   \\
+    Greedy & 4.39\% & 14.95\% & 9.31\% & 11.28\% \\
+    CC LM & 4.71\% & 12.5\% & 6.34\% & 7.98\% \\
+    Train LM & 3.55\% & 12.38\% & - & - \\
+    CC+train LM & 3.32\% & 11.49\% & 6.4\% & 8.06\%\\
     \bottomrule
   \end{tabular}
 \end{table}
 
-We use these created language models for an inference with beam-search decoder (beam size=16, alpha=2, beta=1.5). Table \ref{tab:language_model} shows how the beam-search decoder with our three language models influences the resulting WER. The best WER values with the language model are 3.455\% and 11.86\%. 
+We use these created language models for an inference with beam-search decoder and following algorithm parameters: beam size=16, alpha=2, beta=1.5. Alpha is the amount of importance to place on the N-gram language model. Beta is a penalty term given to longer word sequences. Table \ref{tab:language_model} shows how the beam-search decoder with our three language models influences the resulting WER. The best WER values with the language model are 3.32\% and 11.49\%. 
 
 
 \section{Conclusions}
@@ -343,7 +357,7 @@ In this paper we reveal an open Russian language dataset. It is a large corpus s
 
 Using our new corpus we have trained a QuartzNet acoustic model with CTC loss. The best performance of the acoustic-model was achieved with the help of transfer learning from a pre-trained model on English language. 
 
-Additionally, we built a 3-gram language model on the open Common Crawl dataset and merged it with the train set transcriptions. Using a beam-search algorithm, our resulting model achieves 3.5\% and 11.9\% WER values on Crowd and Farfield datasets respectively.
+Additionally, we built a 3-gram language model on the open Common Crawl dataset and merged it with the train set transcriptions. Using a beam-search algorithm, our resulting model achieves 3.3\% and 11.5\% WER values on Crowd and Farfield datasets respectively.
 
 All the data and models are freely available for downloading at the Github repository\footnote{https://github.com/sberdevices/golos}.
 
@@ -356,50 +370,4 @@ All the data and models are freely available for downloading at the Github repos
 
 \bibliography{mybib}
 
-% \begin{thebibliography}{9}
-% \bibitem[1]{Davis80-COP}
-%   S.\ B.\ Davis and P.\ Mermelstein,
-%   ``Comparison of parametric representation for monosyllabic word recognition in continuously spoken sentences,''
-%   \textit{IEEE Transactions on Acoustics, Speech and Signal Processing}, vol.~28, no.~4, pp.~357--366, 1980.
-% \bibitem[2]{Rabiner89-ATO}
-%   L.\ R.\ Rabiner,
-%   ``A tutorial on hidden Markov models and selected applications in speech recognition,''
-%   \textit{Proceedings of the IEEE}, vol.~77, no.~2, pp.~257-286, 1989.
-% \bibitem[3]{Hastie09-TEO}
-%   T.\ Hastie, R.\ Tibshirani, and J.\ Friedman,
-%   \textit{The Elements of Statistical Learning -- Data Mining, Inference, and Prediction}.
-%   New York: Springer, 2009.
-% \bibitem[4]{YourName17-XXX}
-%   F.\ Lastname1, F.\ Lastname2, and F.\ Lastname3,
-%   ``Title of your INTERSPEECH 2021 publication,''
-%   in \textit{Interspeech 2021 -- 20\textsuperscript{th} Annual Conference of the International Speech Communication Association, September 15-19, Graz, Austria, Proceedings, Proceedings}, 2020, pp.~100--104.
-% \end{thebibliography}
-% # cv50K/QuartzNet15x5_ru.nemo
-% # dev
-% # greedy 0.09314243878630114
-% # СС     0.06341007077198406
-% # golos  0.2335746630873939
-% # 50x50  0.06400661623145963
-% # test
-% # greedy 0.11277843847294787
-% # СС     0.07976001175888932
-% # 50x50  0.08060184133516843
-% # buriy_audiobooks
-% # greedy 0.37859344212600415
-% # CC     0.29636740261708683
-% # 50x50  0.29980296064265144
-% # public_youtube700
-% # greedy 0.520689068688194
-% # CC     0.47994265859999513
-% # 50x50  0.48227519012561654
-% # crowd
-% # greedy 0.04389411437869588
-% # golos  0.035480414335039887
-% # CC     0.04708893915942374
-% # 50x50  0.03317855300234155
-% # portal
-% # greedy 0.14948699594368886
-% # golos  0.12383679312813171
-% # CC     0.12502982581722738
-% # 50x50  0.1148890479599141
 \end{document}
